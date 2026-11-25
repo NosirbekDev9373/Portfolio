@@ -16,6 +16,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'summary_en',
     'description_uz',
     'description_en',
+    'problem_uz',
+    'problem_en',
+    'solution_uz',
+    'solution_en',
+    'features',
+    'contributions',
     'status',
     'live_url',
     'github_url',
@@ -34,6 +40,8 @@ class Project extends Model
             'is_featured' => 'boolean',
             'is_published' => 'boolean',
             'sort_order' => 'integer',
+            'features' => 'array',
+            'contributions' => 'array',
         ];
     }
 
@@ -47,6 +55,95 @@ class Project extends Model
         $locale = app()->getLocale();
 
         return $this->{$field.'_'.$locale} ?? $this->{$field.'_en'} ?? $this->{$field.'_uz'};
+    }
+
+    public function localizedProblem(): ?string
+    {
+        return $this->localizedCaseStudyText('problem');
+    }
+
+    public function localizedSolution(): ?string
+    {
+        return $this->localizedCaseStudyText('solution');
+    }
+
+    /**
+     * @return array<int, array{title: ?string, description: ?string}>
+     */
+    public function localizedFeatures(): array
+    {
+        return $this->localizedItems('features');
+    }
+
+    /**
+     * @return array<int, array{title: ?string, description: ?string}>
+     */
+    public function localizedContributions(): array
+    {
+        return $this->localizedItems('contributions');
+    }
+
+    private function localizedCaseStudyText(string $field): ?string
+    {
+        foreach (array_unique([app()->getLocale(), 'en', 'uz']) as $locale) {
+            $value = $this->{$field.'_'.$locale} ?? null;
+
+            if (is_string($value) && trim($value) !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<int, array{title: ?string, description: ?string}>
+     */
+    private function localizedItems(string $field): array
+    {
+        $items = $this->{$field};
+
+        if (! is_array($items)) {
+            return [];
+        }
+
+        $localized = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $title = $this->localizedItemValue($item, 'title');
+            $description = $this->localizedItemValue($item, 'description');
+
+            if ($title === null && $description === null) {
+                continue;
+            }
+
+            $localized[] = [
+                'title' => $title,
+                'description' => $description,
+            ];
+        }
+
+        return $localized;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function localizedItemValue(array $item, string $field): ?string
+    {
+        foreach (array_unique([app()->getLocale(), 'en', 'uz']) as $locale) {
+            $value = $item[$field.'_'.$locale] ?? null;
+
+            if (is_string($value) && trim($value) !== '') {
+                return $value;
+            }
+        }
+
+        return null;
     }
 
     public function technologies(): BelongsToMany

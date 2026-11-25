@@ -84,4 +84,59 @@ class PortfolioSchemaTest extends TestCase
             $tozalash->technologies->pluck('name')->all(),
         );
     }
+
+    public function test_project_seeder_does_not_overwrite_existing_project_data(): void
+    {
+        $project = Project::create([
+            'slug' => 'steak-house',
+            'title_uz' => 'Admin title',
+            'title_en' => 'Admin title EN',
+            'status' => 'in_progress',
+            'is_featured' => false,
+            'is_published' => false,
+            'sort_order' => 99,
+        ]);
+
+        $technology = Technology::create([
+            'name' => 'AdminTech',
+            'group' => 'backend',
+        ]);
+
+        $project->technologies()->attach($technology);
+
+        $project->images()->create([
+            'path' => 'projects/admin.png',
+            'alt_uz' => 'Admin rasm',
+            'alt_en' => 'Admin image',
+        ]);
+
+        $this->seed(ProjectSeeder::class);
+
+        $project->refresh()->load('technologies', 'images');
+
+        $this->assertSame('Admin title', $project->title_uz);
+        $this->assertSame('in_progress', $project->status);
+        $this->assertFalse($project->is_featured);
+        $this->assertFalse($project->is_published);
+        $this->assertSame(99, $project->sort_order);
+        $this->assertSame(['AdminTech'], $project->technologies->pluck('name')->all());
+        $this->assertSame(['projects/admin.png'], $project->images->pluck('path')->all());
+        $this->assertTrue(Project::where('slug', 'tozalash-web-sayt')->exists());
+    }
+
+    public function test_database_seeder_skips_projects_in_production(): void
+    {
+        $this->app['env'] = 'production';
+
+        $this->seed();
+
+        $this->assertSame(0, Project::count());
+    }
+
+    public function test_database_seeder_seeds_projects_outside_production(): void
+    {
+        $this->seed();
+
+        $this->assertSame(2, Project::count());
+    }
 }

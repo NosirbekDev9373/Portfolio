@@ -27,8 +27,8 @@ class AdminProjectCrudTest extends TestCase
         Storage::fake('public');
 
         $this->admin = User::factory()->create([
-            'email' => config('portfolio.admin.email'),
-            'password' => config('portfolio.admin.password'),
+            'email' => 'admin@example.com',
+            'password' => 'secure-password-123',
         ]);
 
         $this->technology = Technology::create(['name' => 'Laravel', 'group' => 'backend']);
@@ -42,6 +42,7 @@ class AdminProjectCrudTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('admin.projects.index'))
             ->assertOk()
+            ->assertSee('name="robots" content="noindex"', false)
             ->assertSee('Listed Project')
             ->assertSee('listed-project');
 
@@ -58,6 +59,26 @@ class AdminProjectCrudTest extends TestCase
             'summary_en' => 'English summary',
             'description_uz' => 'Uzbek description',
             'description_en' => 'English description',
+            'problem_uz' => 'Yangi muammo',
+            'problem_en' => 'New project problem',
+            'solution_uz' => 'Yangi yechim',
+            'solution_en' => 'New project solution',
+            'features' => [
+                [
+                    'title_uz' => 'Yangi imkoniyat',
+                    'title_en' => 'New feature title',
+                    'description_uz' => 'Yangi imkoniyat tavsifi',
+                    'description_en' => 'New feature description',
+                ],
+            ],
+            'contributions' => [
+                [
+                    'title_uz' => 'Yangi hissa',
+                    'title_en' => 'New contribution title',
+                    'description_uz' => 'Yangi hissa tavsifi',
+                    'description_en' => 'New contribution description',
+                ],
+            ],
             'status' => 'in_progress',
             'live_url' => 'https://example.com/live',
             'github_url' => 'https://github.com/example/repo',
@@ -75,6 +96,10 @@ class AdminProjectCrudTest extends TestCase
 
         $this->assertSame('Yangi loyiha', $project->title_uz);
         $this->assertSame('English description', $project->description_en);
+        $this->assertSame('New project problem', $project->problem_en);
+        $this->assertSame('New project solution', $project->solution_en);
+        $this->assertSame('New feature title', $project->features[0]['title_en']);
+        $this->assertSame('New contribution description', $project->contributions[0]['description_en']);
         $this->assertSame('in_progress', $project->status);
         $this->assertSame('https://example.com/live', $project->live_url);
         $this->assertSame(7, $project->sort_order);
@@ -106,6 +131,71 @@ class AdminProjectCrudTest extends TestCase
             ]);
     }
 
+    public function test_case_study_fields_are_validated(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.projects.store'), $this->payload([
+                'slug' => 'partial-case-study',
+                'features' => [
+                    [
+                        'title_uz' => 'Only a feature title',
+                        'title_en' => '',
+                        'description_uz' => '',
+                        'description_en' => '',
+                    ],
+                ],
+                'contributions' => [
+                    [
+                        'title_uz' => '',
+                        'title_en' => 'Only a contribution title',
+                        'description_uz' => '',
+                        'description_en' => '',
+                    ],
+                ],
+            ]))
+            ->assertSessionHasErrors([
+                'features.0.title_en',
+                'features.0.description_uz',
+                'features.0.description_en',
+                'contributions.0.title_uz',
+                'contributions.0.description_en',
+            ])
+            ->assertSessionDoesntHaveErrors([
+                'features.0.title_uz',
+                'contributions.0.title_en',
+            ]);
+    }
+
+    public function test_empty_case_study_rows_are_not_stored(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.projects.store'), $this->payload([
+                'slug' => 'empty-case-study',
+                'features' => [
+                    [
+                        'title_uz' => '',
+                        'title_en' => '',
+                        'description_uz' => '',
+                        'description_en' => '',
+                    ],
+                ],
+                'contributions' => [
+                    [
+                        'title_uz' => '',
+                        'title_en' => '',
+                        'description_uz' => '',
+                        'description_en' => '',
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('admin.projects.index'));
+
+        $project = Project::where('slug', 'empty-case-study')->firstOrFail();
+
+        $this->assertNull($project->features);
+        $this->assertNull($project->contributions);
+    }
+
     public function test_screenshot_upload_is_stored_with_type_and_size_limits(): void
     {
         $this->actingAs($this->admin)
@@ -120,6 +210,9 @@ class AdminProjectCrudTest extends TestCase
 
         $this->assertSame('projects', dirname($image->path));
         Storage::disk('public')->assertExists($image->path);
+        $this->assertSame($project->title_uz, $image->alt_uz);
+        $this->assertSame($project->title_en, $image->alt_en);
+        $this->assertSame(1, $image->sort_order);
 
         $this->actingAs($this->admin)
             ->post(route('admin.projects.store'), $this->payload([
@@ -134,6 +227,90 @@ class AdminProjectCrudTest extends TestCase
                 'screenshot' => UploadedFile::fake()->create('huge.png', 2049, 'image/png'),
             ]))
             ->assertSessionHasErrors('screenshot');
+    }
+
+    public function test_screenshot_upload_accepts_custom_alt_text_and_sort_order(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.projects.store'), $this->payload([
+                'slug' => 'custom-screenshot',
+                'screenshot' => UploadedFile::fake()->image('screen.png', 120, 120),
+                'screenshot_alt_uz' => 'Maxsus alt',
+                'screenshot_alt_en' => 'Custom alt',
+                'screenshot_sort_order' => 4,
+            ]))
+            ->assertRedirect(route('admin.projects.index'));
+
+        $image = Project::where('slug', 'custom-screenshot')->firstOrFail()->images()->firstOrFail();
+
+        $this->assertSame('Maxsus alt', $image->alt_uz);
+        $this->assertSame('Custom alt', $image->alt_en);
+        $this->assertSame(4, $image->sort_order);
+    }
+
+    public function test_admin_can_update_screenshot_alt_text_and_sort_order(): void
+    {
+        $project = $this->createProject(['slug' => 'screenshot-meta']);
+
+        $image = $project->images()->create([
+            'path' => 'projects/meta.png',
+            'alt_uz' => 'Eski alt',
+            'alt_en' => 'Old alt',
+            'sort_order' => 0,
+        ]);
+        Storage::disk('public')->put('projects/meta.png', 'fake-image');
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.projects.update', $project), $this->payload([
+                'slug' => 'screenshot-meta',
+                'images' => [
+                    $image->id => [
+                        'alt_uz' => 'Yangi alt',
+                        'alt_en' => 'New alt',
+                        'sort_order' => 7,
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('admin.projects.index'));
+
+        $image->refresh();
+
+        $this->assertSame('Yangi alt', $image->alt_uz);
+        $this->assertSame('New alt', $image->alt_en);
+        $this->assertSame(7, $image->sort_order);
+    }
+
+    public function test_admin_cannot_update_another_projects_screenshot_metadata(): void
+    {
+        $project = $this->createProject(['slug' => 'first-project']);
+        $otherProject = $this->createProject(['slug' => 'other-project']);
+
+        $otherImage = $otherProject->images()->create([
+            'path' => 'projects/other.png',
+            'alt_uz' => 'Boshqa alt',
+            'alt_en' => 'Other alt',
+            'sort_order' => 2,
+        ]);
+        Storage::disk('public')->put('projects/other.png', 'fake-image');
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.projects.update', $project), $this->payload([
+                'slug' => 'first-project',
+                'images' => [
+                    $otherImage->id => [
+                        'alt_uz' => 'Hujum',
+                        'alt_en' => 'Attack',
+                        'sort_order' => 99,
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('admin.projects.index'));
+
+        $otherImage->refresh();
+
+        $this->assertSame('Boshqa alt', $otherImage->alt_uz);
+        $this->assertSame('Other alt', $otherImage->alt_en);
+        $this->assertSame(2, $otherImage->sort_order);
     }
 
     public function test_admin_can_edit_and_update_project(): void
@@ -156,6 +333,23 @@ class AdminProjectCrudTest extends TestCase
             ->put(route('admin.projects.update', $project), $this->payload([
                 'slug' => 'editable-project',
                 'title_en' => 'Updated Project',
+                'problem_en' => 'Updated project problem',
+                'features' => [
+                    [
+                        'title_uz' => 'Yangilangan imkoniyat',
+                        'title_en' => 'Updated feature title',
+                        'description_uz' => 'Yangilangan imkoniyat tavsifi',
+                        'description_en' => 'Updated feature description',
+                    ],
+                ],
+                'contributions' => [
+                    [
+                        'title_uz' => 'Yangilangan hissa',
+                        'title_en' => 'Updated contribution title',
+                        'description_uz' => 'Yangilangan hissa tavsifi',
+                        'description_en' => 'Updated contribution description',
+                    ],
+                ],
                 'status' => 'production',
                 'sort_order' => 12,
                 'is_featured' => 0,
@@ -167,6 +361,9 @@ class AdminProjectCrudTest extends TestCase
         $project->refresh();
 
         $this->assertSame('Updated Project', $project->title_en);
+        $this->assertSame('Updated project problem', $project->problem_en);
+        $this->assertSame('Updated feature title', $project->features[0]['title_en']);
+        $this->assertSame('Updated contribution description', $project->contributions[0]['description_en']);
         $this->assertSame(12, $project->sort_order);
         $this->assertFalse($project->is_featured);
         $this->assertFalse($project->is_published);
@@ -246,6 +443,26 @@ class AdminProjectCrudTest extends TestCase
             'summary_en' => 'English summary',
             'description_uz' => 'Uzbek description',
             'description_en' => 'English description',
+            'problem_uz' => 'Uzbek problem',
+            'problem_en' => 'English problem',
+            'solution_uz' => 'Uzbek solution',
+            'solution_en' => 'English solution',
+            'features' => [
+                [
+                    'title_uz' => 'Uzbek feature title',
+                    'title_en' => 'English feature title',
+                    'description_uz' => 'Uzbek feature description',
+                    'description_en' => 'English feature description',
+                ],
+            ],
+            'contributions' => [
+                [
+                    'title_uz' => 'Uzbek contribution title',
+                    'title_en' => 'English contribution title',
+                    'description_uz' => 'Uzbek contribution description',
+                    'description_en' => 'English contribution description',
+                ],
+            ],
             'status' => 'production',
             'live_url' => 'https://example.com',
             'github_url' => '',

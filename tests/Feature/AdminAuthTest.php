@@ -15,18 +15,18 @@ class AdminAuthTest extends TestCase
         $this->get('/admin')->assertRedirect('/login');
     }
 
-    public function test_login_uses_the_single_admin_and_logout_works(): void
+    public function test_login_and_logout_work(): void
     {
         $user = User::factory()->create([
-            'email' => config('portfolio.admin.email'),
-            'password' => config('portfolio.admin.password'),
+            'email' => 'admin@example.com',
+            'password' => 'secure-password-123',
         ]);
 
         $this->assertSame(1, User::count());
 
         $this->post('/login', [
             'email' => $user->email,
-            'password' => config('portfolio.admin.password'),
+            'password' => 'secure-password-123',
         ])->assertRedirect('/admin');
 
         $this->assertAuthenticatedAs($user);
@@ -40,8 +40,8 @@ class AdminAuthTest extends TestCase
     public function test_wrong_password_is_rejected(): void
     {
         $user = User::factory()->create([
-            'email' => config('portfolio.admin.email'),
-            'password' => config('portfolio.admin.password'),
+            'email' => 'admin@example.com',
+            'password' => 'secure-password-123',
         ]);
 
         $this->from('/login')->post('/login', [
@@ -52,8 +52,35 @@ class AdminAuthTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_login_page_renders(): void
+    {
+        $this->get('/login')
+            ->assertOk()
+            ->assertSee('name="robots" content="noindex"', false)
+            ->assertSee('name="email"', false)
+            ->assertSee('name="password"', false)
+            ->assertSee('Log in')
+            ->assertDontSee('fonts.bunny.net');
+    }
+
     public function test_registration_route_is_disabled(): void
     {
         $this->get('/register')->assertNotFound();
+    }
+
+    public function test_removed_breeze_routes_are_unavailable(): void
+    {
+        $routes = [
+            '/register',
+            '/forgot-password',
+            '/reset-password/test',
+            '/verify-email',
+            '/confirm-password',
+            '/profile',
+        ];
+
+        foreach ($routes as $route) {
+            $this->get($route)->assertNotFound();
+        }
     }
 }

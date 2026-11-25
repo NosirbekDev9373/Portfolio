@@ -11,8 +11,6 @@ class ProjectSeeder extends Seeder
 {
     public function run(): void
     {
-        Project::whereIn('slug', ['loyiha-1-placeholder', 'loyiha-2-placeholder'])->delete();
-
         $technologies = [
             'PHP' => 'backend',
             'Laravel' => 'backend',
@@ -29,7 +27,7 @@ class ProjectSeeder extends Seeder
         $technologyModels = [];
 
         foreach ($technologies as $name => $group) {
-            $technologyModels[$name] = Technology::updateOrCreate(
+            $technologyModels[$name] = Technology::firstOrCreate(
                 ['name' => $name],
                 ['group' => $group],
             );
@@ -74,10 +72,14 @@ class ProjectSeeder extends Seeder
             $technologyNames = $data['technologies'];
             unset($data['technologies']);
 
-            $project = Project::updateOrCreate(
+            $project = Project::firstOrCreate(
                 ['slug' => $data['slug']],
                 $data,
             );
+
+            if (! $project->wasRecentlyCreated) {
+                continue;
+            }
 
             $project->technologies()->sync(
                 array_map(

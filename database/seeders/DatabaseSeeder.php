@@ -14,7 +14,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->isProduction()) {
+            return;
+        }
+
         $this->call(ProjectSeeder::class);
-        $this->call(AdminUserSeeder::class);
     }
 }

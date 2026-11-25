@@ -35,11 +35,11 @@ class ProjectController extends Controller
             ? url(Storage::disk('public')->url($screenshots->first()->path))
             : null;
 
-        return view('welcome', array_merge(compact(
+        return view('projects.show', compact(
             'project',
             'screenshots',
             'technologiesByGroup',
             'ogImage',
-        ), ['mode' => 'show']));
+        ));
     }
 }

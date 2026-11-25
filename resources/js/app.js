@@ -43,3 +43,51 @@ if (revealElements.length > 0) {
         revealElements.forEach((element) => element.classList.add('is-visible'));
     }
 }
+
+document.querySelectorAll('[data-repeater]').forEach((repeater) => {
+    const items = repeater.querySelector('[data-repeater-items]');
+    const template = repeater.querySelector('[data-repeater-template]');
+    const addButton = repeater.querySelector('[data-repeater-add]');
+
+    if (!items || !template || !addButton) {
+        return;
+    }
+
+    let nextIndex = items.querySelectorAll('[data-repeater-item]').length;
+
+    addButton.addEventListener('click', () => {
+        const fragment = template.content.cloneNode(true);
+        const row = fragment.firstElementChild;
+
+        if (!row) {
+            return;
+        }
+
+        row.querySelectorAll('[name*="__INDEX__"]').forEach((field) => {
+            field.setAttribute('name', field.getAttribute('name').replaceAll('__INDEX__', nextIndex));
+        });
+
+        nextIndex += 1;
+
+        items.appendChild(row);
+
+        const firstField = row.querySelector('input, textarea, select');
+        if (firstField) {
+            firstField.focus();
+        }
+    });
+
+    items.addEventListener('click', (event) => {
+        const removeButton = event.target.closest('[data-repeater-remove]');
+
+        if (!removeButton) {
+            return;
+        }
+
+        const row = removeButton.closest('[data-repeater-item]');
+
+        if (row) {
+            row.remove();
+        }
+    });
+});

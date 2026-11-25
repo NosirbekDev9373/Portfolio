@@ -34,8 +34,4 @@ return [
         'tools' => 'site.skills.groups.tools',
     ],
 
-    'admin' => [
-        'email' => env('ADMIN_EMAIL', 'admin@portfolio.test'),
-        'password' => env('ADMIN_PASSWORD', 'password'),
-    ],
 ];

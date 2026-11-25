@@ -61,6 +61,29 @@ class HomePageTest extends TestCase
     {
         $this->seed(ProjectSeeder::class);
 
+        Project::where('slug', 'steak-house')->firstOrFail()->update([
+            'problem_uz' => 'Uzbek problem text.',
+            'problem_en' => 'English problem text.',
+            'solution_uz' => 'Uzbek solution text.',
+            'solution_en' => 'English solution text.',
+            'features' => [
+                [
+                    'title_uz' => 'Uzbek feature title',
+                    'title_en' => 'English feature title',
+                    'description_uz' => 'Uzbek feature description',
+                    'description_en' => 'English feature description',
+                ],
+            ],
+            'contributions' => [
+                [
+                    'title_uz' => 'Uzbek contribution title',
+                    'title_en' => 'English contribution title',
+                    'description_uz' => 'Uzbek contribution description',
+                    'description_en' => 'English contribution description',
+                ],
+            ],
+        ]);
+
         $this->get('/en/projects/steak-house')
             ->assertOk()
             ->assertSee('Steak House')
@@ -72,6 +95,12 @@ class HomePageTest extends TestCase
             ->assertSeeText('My Contribution')
             ->assertSeeText('Live Demo / Repository')
             ->assertSeeText('Repository is not public.')
+            ->assertSeeText('English problem text.')
+            ->assertSeeText('English solution text.')
+            ->assertSeeText('English feature title')
+            ->assertSeeText('English feature description')
+            ->assertSeeText('English contribution title')
+            ->assertSeeText('English contribution description')
             ->assertSee('https://steakhouse.nweb.uz/', false)
             ->assertSee('<title>Steak House — Case Study</title>', false)
             ->assertSee('property="og:type" content="article"', false)
@@ -84,6 +113,22 @@ class HomePageTest extends TestCase
             ->assertOk()
             ->assertSee('Steak House')
             ->assertSee('<link rel="alternate" hreflang="en" href="'.url('/en/projects/steak-house').'"', false);
+    }
+
+    public function test_case_study_hides_empty_case_study_sections(): void
+    {
+        $this->seed(ProjectSeeder::class);
+
+        $this->get('/en/projects/steak-house')
+            ->assertOk()
+            ->assertSeeText('Overview')
+            ->assertDontSeeText('Problem & Solution')
+            ->assertDontSeeText('Key Features')
+            ->assertDontSeeText('My Contribution')
+            ->assertDontSee('[Problem description will be added.]')
+            ->assertDontSee('[Solution description will be added.]')
+            ->assertDontSee('[Key feature')
+            ->assertDontSee('[Contribution item');
     }
 
     public function test_unpublished_and_missing_projects_return_custom_404(): void
@@ -163,6 +208,8 @@ class HomePageTest extends TestCase
         $this->get('/robots.txt')
             ->assertOk()
             ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+            ->assertSee('Disallow: /admin')
+            ->assertSee('Disallow: /login')
             ->assertSee('Sitemap: '.url('/sitemap.xml'));
     }
 }
