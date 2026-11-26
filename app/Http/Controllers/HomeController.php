@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
-use App\Models\Technology;
+use App\Models\Skill;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 
 class HomeController extends Controller
 {
+    private const SKILL_GROUP_ORDER = ['backend', 'frontend', 'database', 'tools', 'testing'];
+
     public function index(): View
     {
         $featuredProjects = Project::query()
@@ -23,11 +24,15 @@ class HomeController extends Controller
             ->where('status', 'production')
             ->count();
 
-        $technologiesByGroup = Technology::query()
-            ->whereHas('projects', fn (Builder $query) => $query->published())
+        $skills = Skill::query()
+            ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
             ->groupBy('group');
+
+        $skillsByGroup = collect(self::SKILL_GROUP_ORDER)
+            ->filter(fn (string $group): bool => $skills->has($group))
+            ->mapWithKeys(fn (string $group): array => [$group => $skills->get($group)]);
 
         $repositories = Project::query()
             ->published()
@@ -38,7 +43,7 @@ class HomeController extends Controller
         return view('home', compact(
             'featuredProjects',
             'productionProjectsCount',
-            'technologiesByGroup',
+            'skillsByGroup',
             'repositories',
         ));
     }

@@ -44,7 +44,7 @@ npm run build
 php artisan serve
 ```
 
-`php artisan db:seed` faqat lokal muhit uchun; production’da loyihalar avtomatik seed qilinmaydi.
+`php artisan db:seed` faqat lokal muhit uchun; production’da loyihalar va skill’lar avtomatik seed qilinmaydi.
 
 Admin panel `/admin` manzilida. Foydalanuvchi yaratish:
 
@@ -85,10 +85,13 @@ php artisan event:cache
 sudo systemctl reload php8.3-fpm
 ```
 
-Ixtiyoriy, bir martalik (faqat boshlang‘ich loyihalarni yuklash uchun):
+Ixtiyoriy, bir martalik (faqat boshlang‘ich loyihalar va skill’larni yuklash uchun):
 
 ```bash
 php artisan db:seed --class=ProjectSeeder --force
+php artisan db:seed --class=SkillSeeder --force
 ```
+
+Yangi texnologiya qo‘shish: admin -> Skills
 
 `php-fpm` reload qilinadi, chunki `php_admin_value[opcache.validate_timestamps] = 0` holatida yangi PHP kod jarayonlar qayta boshlanmaguncha ko‘rinmaydi.

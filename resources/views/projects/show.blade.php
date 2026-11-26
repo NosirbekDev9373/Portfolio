@@ -159,9 +159,9 @@
                 <h2 class="section-heading">{{ __('site.case_study.technology_stack') }}</h2>
 
                 <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach (config('portfolio.skill_groups') as $group => $labelKey)
+                    @foreach (['backend', 'frontend', 'database', 'tools'] as $group)
                         <div class="section-card">
-                            <p class="section-label">{{ __($labelKey) }}</p>
+                            <p class="section-label">{{ __('site.skills.groups.'.$group) }}</p>
                             <div class="mt-4 flex flex-wrap gap-2">
                                 @forelse ($technologiesByGroup->get($group, collect()) as $technology)
                                     <span class="chip">{{ $technology->name }}</span>

@@ -73,12 +73,14 @@ return [
     ],
     'skills' => [
         'heading' => 'Technical Skills',
-        'note' => 'Only technologies used in real projects.',
+        'note' => 'Technologies that I have used in practice and continue to use and learn.',
+        'learning' => 'Learning',
         'groups' => [
             'backend' => 'Backend',
-            'database' => 'Database',
             'frontend' => 'Frontend basics',
+            'database' => 'Database',
             'tools' => 'Tools & DevOps',
+            'testing' => 'Testing',
         ],
     ],
     'journey' => [

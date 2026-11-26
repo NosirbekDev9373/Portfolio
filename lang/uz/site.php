@@ -73,12 +73,14 @@ return [
     ],
     'skills' => [
         'heading' => 'Texnik ko‘nikmalar',
-        'note' => 'Faqat real loyihalarda ishlatilgan texnologiyalar.',
+        'note' => 'Amalda ishlatgan va hozir ham ishlatib o‘rganib keloyotgan texnologiyalarim.',
+        'learning' => 'O‘rganilmoqda',
         'groups' => [
             'backend' => 'Backend',
-            'database' => 'Ma’lumotlar bazasi',
             'frontend' => 'Frontend asoslari',
+            'database' => 'Ma’lumotlar bazasi',
             'tools' => 'Vositalar va DevOps',
+            'testing' => 'Testlash',
         ],
     ],
     'journey' => [

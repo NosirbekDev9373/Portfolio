@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Project;
+use App\Models\Skill;
 use Database\Seeders\ProjectSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,39 @@ class HomePageTest extends TestCase
             ->assertOk()
             ->assertSee('Cleaning Services Website')
             ->assertSee('Personal projects deployed to production.');
+    }
+
+    public function test_home_groups_skills_in_order_and_marks_learning_skills(): void
+    {
+        Skill::create(['name' => 'Laravel 13', 'group' => 'backend', 'sort_order' => 2]);
+        Skill::create(['name' => 'PHP 8.3+', 'group' => 'backend', 'sort_order' => 1]);
+        Skill::create(['name' => 'JavaScript', 'group' => 'frontend', 'sort_order' => 5, 'status' => 'learning']);
+        Skill::create(['name' => 'PHPUnit', 'group' => 'testing']);
+
+        $html = $this->get('/uz')
+            ->assertOk()
+            ->assertSeeText('O‘rganilmoqda')
+            ->assertSeeText('Testlash')
+            ->getContent();
+
+        $backend = strpos($html, 'data-skill-group="backend"');
+        $frontend = strpos($html, 'data-skill-group="frontend"');
+        $testing = strpos($html, 'data-skill-group="testing"');
+
+        $this->assertNotFalse($backend);
+        $this->assertNotFalse($frontend);
+        $this->assertNotFalse($testing);
+        $this->assertStringContainsString('data-skill-status="learning"', $html);
+        $this->assertTrue($backend < $frontend);
+        $this->assertTrue($frontend < $testing);
+        $this->assertTrue(strpos($html, 'PHP 8.3+') < strpos($html, 'Laravel 13'));
+        $this->assertStringNotContainsString('data-skill-group="database"', $html);
+        $this->assertStringNotContainsString('data-skill-group="tools"', $html);
+
+        $englishHtml = $this->get('/en')->assertOk()->getContent();
+
+        $this->assertStringContainsString('data-skill-status="learning"', $englishHtml);
+        $this->assertStringContainsString('Learning', $englishHtml);
     }
 
     public function test_projects_index_shows_only_published_projects(): void

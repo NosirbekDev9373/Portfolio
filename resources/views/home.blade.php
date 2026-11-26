@@ -151,15 +151,20 @@
                 </div>
 
                 <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach (config('portfolio.skill_groups') as $group => $labelKey)
-                        <div class="section-card">
-                            <p class="section-label">{{ __($labelKey) }}</p>
+                    @foreach ($skillsByGroup as $group => $skills)
+                        <div class="section-card" data-skill-group="{{ $group }}">
+                            <p class="section-label">{{ __('site.skills.groups.'.$group) }}</p>
                             <div class="mt-4 flex flex-wrap gap-2">
-                                @forelse ($technologiesByGroup->get($group, collect()) as $technology)
-                                    <span class="chip">{{ $technology->name }}</span>
-                                @empty
-                                    <span class="text-sm text-muted">—</span>
-                                @endforelse
+                                @foreach ($skills as $skill)
+                                    <span class="chip inline-flex items-center gap-2">
+                                        {{ $skill->name }}
+                                        @if ($skill->status === 'learning')
+                                            <span data-skill-status="learning" class="rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-amber-300">
+                                                {{ __('site.skills.learning') }}
+                                            </span>
+                                        @endif
+                                    </span>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach

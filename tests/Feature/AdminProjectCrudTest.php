@@ -462,6 +462,22 @@ class AdminProjectCrudTest extends TestCase
             ->assertDontSee('name="screenshot_sort_order"', false);
     }
 
+    public function test_project_forms_have_submit_button(): void
+    {
+        $project = $this->createProject(['slug' => 'form-button']);
+        $saveButton = '<button type="submit" class="btn btn-primary">Save project</button>';
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.projects.create'))
+            ->assertOk()
+            ->assertSee($saveButton, false);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.projects.edit', $project))
+            ->assertOk()
+            ->assertSee($saveButton, false);
+    }
+
     public function test_admin_can_delete_selected_screenshot(): void
     {
         $project = $this->createProject(['slug' => 'screenshot-delete']);

@@ -59,6 +59,7 @@ class AdminAuthTest extends TestCase
             ->assertSee('name="robots" content="noindex"', false)
             ->assertSee('name="email"', false)
             ->assertSee('name="password"', false)
+            ->assertSee('type="submit"', false)
             ->assertSee('Log in')
             ->assertDontSee('fonts.bunny.net');
     }

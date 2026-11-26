@@ -11,7 +11,11 @@
 <body class="min-h-screen bg-background font-sans text-foreground antialiased">
     <header class="border-b border-white/10 bg-surface">
         <div class="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-            <a href="{{ url('/') }}" class="btn btn-secondary">View site</a>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ url('/') }}" class="btn btn-secondary">View site</a>
+                <a href="{{ route('admin.projects.index') }}" class="btn btn-secondary">Projects</a>
+                <a href="{{ route('admin.skills.index') }}" class="btn btn-secondary">Skills</a>
+            </div>
 
             <div class="flex flex-wrap items-center gap-4">
                 <span class="text-sm text-muted">{{ auth()->user()?->email }}</span>
