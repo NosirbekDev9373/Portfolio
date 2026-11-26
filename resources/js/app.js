@@ -1,3 +1,5 @@
+import { initCarousels } from './carousel.js';
+
 const navToggle = document.querySelector('[data-nav-toggle]');
 const navMenu = document.querySelector('[data-nav-menu]');
 
@@ -91,3 +93,5 @@ document.querySelectorAll('[data-repeater]').forEach((repeater) => {
         }
     });
 });
+
+initCarousels();

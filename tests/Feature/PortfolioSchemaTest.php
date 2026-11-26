@@ -54,6 +54,34 @@ class PortfolioSchemaTest extends TestCase
         $this->assertCount(1, Project::featured()->get());
     }
 
+    public function test_project_images_are_ordered_by_sort_order(): void
+    {
+        $project = Project::create([
+            'slug' => 'ordered-images',
+            'title_uz' => 'Tartiblangan rasmlar',
+            'title_en' => 'Ordered Images',
+            'status' => 'production',
+        ]);
+
+        $project->images()->create([
+            'path' => 'projects/later.png',
+            'alt_uz' => 'Keyin',
+            'alt_en' => 'Later',
+            'sort_order' => 2,
+        ]);
+        $project->images()->create([
+            'path' => 'projects/first.png',
+            'alt_uz' => 'Birinchi',
+            'alt_en' => 'First',
+            'sort_order' => 1,
+        ]);
+
+        $this->assertSame(
+            ['projects/first.png', 'projects/later.png'],
+            $project->images->pluck('path')->all(),
+        );
+    }
+
     public function test_project_seeder_creates_the_two_production_projects(): void
     {
         $this->seed(ProjectSeeder::class);

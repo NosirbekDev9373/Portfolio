@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class ProjectController extends Controller
 {
@@ -35,6 +36,7 @@ class ProjectController extends Controller
     {
         $this->normalizeRepeatableInputs($request);
         $this->validateProject($request);
+        $this->ensureScreenshotLimit($request);
 
         $project = Project::create($this->projectData($request));
 
@@ -56,6 +58,7 @@ class ProjectController extends Controller
     {
         $this->normalizeRepeatableInputs($request);
         $this->validateProject($request, $project);
+        $this->ensureScreenshotLimit($request, $project);
 
         $project->update($this->projectData($request));
 
@@ -118,10 +121,8 @@ class ProjectController extends Controller
             'is_published' => ['boolean'],
             'technologies' => ['array'],
             'technologies.*' => ['exists:technologies,id'],
-            'screenshot' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
-            'screenshot_alt_uz' => ['nullable', 'string', 'max:255'],
-            'screenshot_alt_en' => ['nullable', 'string', 'max:255'],
-            'screenshot_sort_order' => ['nullable', 'integer', 'min:0', 'max:10000'],
+            'screenshots' => ['nullable', 'array', 'max:10'],
+            'screenshots.*' => ['file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
             'delete_screenshots' => ['array'],
             'delete_screenshots.*' => ['exists:project_images,id'],
             'images' => ['nullable', 'array'],
@@ -240,29 +241,47 @@ class ProjectController extends Controller
         }
     }
 
+    private function ensureScreenshotLimit(Request $request, ?Project $project = null): void
+    {
+        $files = $request->file('screenshots', []);
+        $incoming = is_array($files) ? count($files) : 0;
+
+        $deleteIds = $request->input('delete_screenshots', []);
+        $deleteIds = is_array($deleteIds) ? $deleteIds : [];
+
+        $remaining = $project
+            ? $project->images()->whereNotIn('id', $deleteIds)->count()
+            : 0;
+
+        if ($remaining + $incoming > 10) {
+            throw ValidationException::withMessages([
+                'screenshots' => 'A project can have at most 10 screenshots.',
+            ]);
+        }
+    }
+
     private function handleScreenshots(Request $request, Project $project): void
     {
-        if (! $request->hasFile('screenshot')) {
+        $files = $request->file('screenshots', []);
+
+        if (! is_array($files) || $files === []) {
             return;
         }
 
-        $path = $request->file('screenshot')->store('projects', 'public');
+        $sortOrder = (int) $project->images()->max('sort_order');
 
-        $project->images()->create([
-            'path' => $path,
-            'alt_uz' => $this->imageAlt($request, 'screenshot_alt_uz', $project->title_uz),
-            'alt_en' => $this->imageAlt($request, 'screenshot_alt_en', $project->title_en),
-            'sort_order' => $request->filled('screenshot_sort_order')
-                ? (int) $request->input('screenshot_sort_order')
-                : (int) $project->images()->max('sort_order') + 1,
-        ]);
-    }
+        foreach ($files as $file) {
+            if (! $file || ! $file->isValid()) {
+                continue;
+            }
 
-    private function imageAlt(Request $request, string $key, string $fallback): string
-    {
-        $value = trim((string) $request->input($key, ''));
-
-        return $value !== '' ? $value : $fallback;
+            $project->images()->create([
+                'path' => $file->store('projects', 'public'),
+                'alt_uz' => $project->title_uz,
+                'alt_en' => $project->title_en,
+                'sort_order' => ++$sortOrder,
+            ]);
+        }
     }
 
     private function deleteScreenshots(Request $request, Project $project): void

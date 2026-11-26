@@ -53,11 +53,17 @@
                 <div class="section-card lg:col-span-2">
                     <x-section-label number="02" :label="__('site.sections.about')" />
                     <h2 class="section-heading">{{ __('site.about.heading') }}</h2>
-                    <p class="mt-4 max-w-3xl text-sm leading-7 text-muted">{{ __('site.about.placeholder') }}</p>
+                    <p class="mt-4 max-w-3xl text-sm leading-7 text-muted">{{ __('site.about.text') }}</p>
                 </div>
                 <div class="section-card">
-                    <p class="section-label">{{ __('site.about.focus') }}</p>
-                    <p class="mt-4 text-sm leading-7 text-muted">{{ __('site.about.focus_placeholder') }}</p>
+                    <ul class="mt-4 space-y-2 text-sm leading-7 text-muted">
+                        @foreach (__('site.about.focus') as $focus)
+                            <li class="flex gap-2">
+                                <span aria-hidden="true" class="text-accent">•</span>
+                                <span>{{ $focus }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
             </section>
 
@@ -85,14 +91,11 @@
                         @endphp
 
                         <article class="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-surface transition duration-300 hover:-translate-y-1 hover:border-accent/40">
-                            <div class="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-linear-to-br from-accent/25 via-surface to-background">
-                                <span class="absolute -bottom-6 right-4 text-8xl font-semibold text-white/5" aria-hidden="true">
-                                    {{ \Illuminate\Support\Str::substr($project->localized('title') ?? '', 0, 1) }}
-                                </span>
-                                <div class="absolute inset-0 flex items-center justify-center px-6 text-center">
-                                    <span class="text-xs uppercase tracking-[0.3em] text-muted">{{ __('site.projects.screenshot_placeholder') }}</span>
-                                </div>
-                            </div>
+                            <x-project-carousel
+                                :images="$project->images"
+                                :fallback-title="$project->localized('title')"
+                                compact
+                            />
 
                             <div class="flex flex-1 flex-col gap-5 p-6 sm:p-7">
                                 <div class="flex flex-wrap items-center gap-3">
@@ -187,7 +190,7 @@
                 <div class="section-card">
                     <x-section-label number="06" :label="__('site.sections.github')" />
                     <h2 class="section-heading">{{ __('site.github.heading') }}</h2>
-                    <p class="mt-4 text-sm leading-7 text-muted">{{ __('site.github.placeholder') }}</p>
+                    <p class="mt-4 text-sm leading-7 text-muted">{{ __('site.github.text') }}</p>
                     <a href="{{ config('portfolio.owner.github') }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary mt-6">
                         {{ __('site.github.profile') }}
                         <span aria-hidden="true">↗</span>
@@ -217,7 +220,7 @@
                         <div class="mt-6 grid gap-8 lg:grid-cols-2 lg:items-end">
                             <div>
                                 <h2 class="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{{ __('site.contact.heading') }}</h2>
-                                <p class="mt-4 max-w-xl text-sm leading-7 text-muted">{{ __('site.contact.placeholder') }}</p>
+                                <p class="mt-4 max-w-xl text-sm leading-7 text-muted">{{ __('site.contact.text') }}</p>
                             </div>
                             <div class="flex flex-wrap gap-3 lg:justify-end">
                                 <a href="mailto:{{ config('portfolio.owner.email') }}" class="btn btn-primary">{{ __('site.contact.email') }}</a>

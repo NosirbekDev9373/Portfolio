@@ -4,7 +4,7 @@ return [
     'brand' => 'Nurullayev Nosirbek',
     'meta' => [
         'title' => 'Nurullayev Nosirbek — PHP / Laravel dasturchi',
-        'description' => 'PHP / Laravel backend dasturchining shaxsiy portfolio sayti: production loyihalar, texnik ko‘nikmalar va aloqa ma’lumotlari.',
+        'description' => 'PHP / Laravel full-stack dasturchining shaxsiy portfolio sayti: production loyihalar, texnik ko‘nikmalar va aloqa ma’lumotlari.',
     ],
     'nav' => [
         'primary' => 'Asosiy navigatsiya',
@@ -29,9 +29,9 @@ return [
         'contact' => 'Aloqa',
     ],
     'hero' => [
-        'eyebrow' => 'PHP / Laravel Backend dasturchi',
+        'eyebrow' => 'PHP / Laravel Full-Stack dasturchi',
         'heading' => 'Men PHP va Laravel bilan raqamli mahsulotlar yarataman.',
-        'description' => '[Qisqa professional ta’rif keyin to‘ldiriladi.]',
+        'description' => 'PHP va Laravel yordamida xavfsiz, kengaytiriladigan web-ilovalar yarataman: g‘oyadan Production serverigacha.',
         'production_label' => 'Production loyihalar',
         'core_stack' => 'Asosiy stack',
         'view_projects' => 'Loyihalarni ko‘rish',
@@ -41,9 +41,17 @@ return [
     ],
     'about' => [
         'heading' => 'Men haqimda',
-        'placeholder' => '[Men haqimda matni keyin to‘ldiriladi.]',
-        'focus' => 'Yo‘nalish',
-        'focus_placeholder' => '[Asosiy yo‘nalishlar keyin to‘ldiriladi.]',
+        'text' => 'Men Full-Stack Web Development yo‘nalishiga e’tibor qarataman. Asosiy qiziqishim — zamonaviy, xavfsiz va kengaytirish imkoniyati mavjud web-ilovalarni ishlab chiqish. Maqsadim — faqat kod yozish emas, balki g‘oyadan boshlab Production muhitigacha bo‘lgan to‘liq web-loyiha jarayonini amalga oshira oladigan dasturchi bo‘lish.',
+        'focus' => [
+            'Backend architecture va server-side development',
+            'Laravel yordamida web-ilovalar va REST API yaratish',
+            'Frontend va backend integratsiyasi',
+            'Ma’lumotlar bazasini loyihalash va optimallashtirish',
+            'Authentication, authorization va application security',
+            'Docker yordamida development muhitini tashkil qilish',
+            'GitHub Actions orqali CI/CD jarayonlarini avtomatlashtirish',
+            'Loyihalarni Production serverga joylashtirish va qo‘llab-quvvatlash',
+        ],
     ],
     'projects' => [
         'heading' => 'Tanlangan loyihalar',
@@ -78,22 +86,22 @@ return [
         'note' => 'Shaxsiy loyihalar professional ish tajribasi sifatida ko‘rsatilmaydi.',
         'items' => [
             [
-                'title' => '[Tajriba bosqichi 1]',
-                'description' => '[Tavsif keyin to‘ldiriladi.]',
+                'title' => '2024 — Boshlanish',
+                'description' => 'Dasturlash yo‘limni PHP va web-dasturlash asoslaridan boshladim.',
             ],
             [
-                'title' => '[Tajriba bosqichi 2]',
-                'description' => '[Tavsif keyin to‘ldiriladi.]',
+                'title' => 'Amaliyot orqali o‘rganish',
+                'description' => 'Backend va frontend texnologiyalari, dastur arxitekturasi, ma’lumotlar bazalari va zamonaviy ishlab chiqish usullari bo‘yicha bilimimni shaxsiy loyihalar yaratib, yangi texnologiyalarni qo‘llab va ilovalarni Production’ga joylashtirib kengaytirdim.',
             ],
             [
-                'title' => '[Tajriba bosqichi 3]',
-                'description' => '[Tavsif keyin to‘ldiriladi.]',
+                'title' => 'Bugun',
+                'description' => 'Full-Stack yo‘nalishiga e’tibor qarataman va PHP, Laravel, JavaScript, ma’lumotlar bazalari hamda CI/CD avtomatlashtirish bo‘yicha ko‘nikmalarimni oshirib boryapman.',
             ],
         ],
     ],
     'github' => [
         'heading' => 'Kod va repository’lar',
-        'placeholder' => '[GitHub faolligi matni keyin to‘ldiriladi.]',
+        'text' => 'GitHub’da ochiq repository’larim: kod, README fayllari va commit tarixi.',
         'profile' => 'GitHub profili',
         'repositories' => 'Repository’lar',
         'view_repository' => 'Repository’ni ko‘rish',
@@ -101,7 +109,7 @@ return [
     ],
     'contact' => [
         'heading' => 'Bog‘laning',
-        'placeholder' => '[Aloqa matni keyin to‘ldiriladi.]',
+        'text' => 'Savol, g‘oya yoki muhokama qilinadigan loyiha bormi? Email, LinkedIn yoki GitHub orqali yozing.',
         'email' => 'Email',
         'linkedin' => 'LinkedIn',
         'github' => 'GitHub',
@@ -110,7 +118,7 @@ return [
         'label' => 'Til',
     ],
     'footer' => [
-        'tagline' => 'PHP / Laravel Backend dasturchi',
+        'tagline' => 'PHP / Laravel Full-Stack dasturchi',
         'rights' => 'Barcha huquqlar himoyalangan.',
     ],
     'skip_to_content' => 'Asosiy kontentga o‘tish',
@@ -119,7 +127,6 @@ return [
         'breadcrumb' => 'Yo‘l ko‘rsatkich',
         'quick_links' => 'Tez havolalar',
         'overview' => 'Umumiy ma’lumot',
-        'overview_placeholder' => '[Umumiy ma’lumot matni keyin to‘ldiriladi.]',
         'problem_solution' => 'Muammo va yechim',
         'problem' => 'Muammo',
         'solution' => 'Yechim',
@@ -127,6 +134,10 @@ return [
         'technology_stack' => 'Texnologiyalar',
         'screenshots' => 'Skrinshotlar',
         'screenshot_placeholder' => 'Skrinshot keyin qo‘shiladi',
+        'carousel_previous' => 'Oldingi skrinshot',
+        'carousel_next' => 'Keyingi skrinshot',
+        'carousel_dots' => 'Skrinshot nuqtalari',
+        'carousel_go_to' => 'Skrinshotga o‘tish',
         'contribution' => 'Mening hissam',
         'live_demo_repository' => 'Live Demo / Repository',
         'repository' => 'Repository',

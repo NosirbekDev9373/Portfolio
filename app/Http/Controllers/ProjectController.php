@@ -12,7 +12,7 @@ class ProjectController extends Controller
     {
         $projects = Project::query()
             ->published()
-            ->with('technologies')
+            ->with(['technologies', 'images'])
             ->orderBy('sort_order')
             ->get();
 
@@ -32,7 +32,7 @@ class ProjectController extends Controller
         $technologiesByGroup = $project->technologies->groupBy('group');
 
         $ogImage = $screenshots->isNotEmpty()
-            ? url(Storage::disk('public')->url($screenshots->first()->path))
+            ? asset('storage/'.$screenshots->first()->path)
             : null;
 
         return view('projects.show', compact(

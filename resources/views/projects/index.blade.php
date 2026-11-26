@@ -24,14 +24,11 @@
                     @endphp
 
                     <article data-reveal class="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-surface transition duration-300 hover:-translate-y-1 hover:border-accent/40">
-                        <div class="relative aspect-[16/10] overflow-hidden border-b border-white/10 bg-linear-to-br from-accent/25 via-surface to-background">
-                            <span class="absolute -bottom-6 right-4 text-8xl font-semibold text-white/5" aria-hidden="true">
-                                {{ \Illuminate\Support\Str::substr($project->localized('title') ?? '', 0, 1) }}
-                            </span>
-                            <div class="absolute inset-0 flex items-center justify-center px-6 text-center">
-                                <span class="text-xs uppercase tracking-[0.3em] text-muted">{{ __('site.projects.screenshot_placeholder') }}</span>
-                            </div>
-                        </div>
+                        <x-project-carousel
+                            :images="$project->images"
+                            :fallback-title="$project->localized('title')"
+                            compact
+                        />
 
                         <div class="flex flex-1 flex-col gap-5 p-6 sm:p-7">
                             <div class="flex flex-wrap items-center gap-3">

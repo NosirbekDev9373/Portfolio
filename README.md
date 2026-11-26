@@ -1,6 +1,6 @@
-# Portfolio
+# PHP / Laravel full-stack dasturchining shaxsiy portfolio sayti.
 
-PHP / Laravel backend dasturchining shaxsiy portfolio sayti. Loyiha `Dark Editorial + Bento Grid` yo‘nalishida ishlangan; interfeys ikki tilda: `/uz` (standart) va `/en`. Sayt production’dagi shaxsiy loyihalarni case study shaklida namoyish etadi. Loyihalar va ularning matnlari admin panel orqali boshqariladi.
+Loyiha `Dark Editorial + Bento Grid` yo‘nalishida ishlangan; interfeys ikki tilda: `/uz` (standart) va `/en`. Sayt production’dagi shaxsiy loyihalarni case study shaklida namoyish etadi. Loyihalar va ularning matnlari admin panel orqali boshqariladi.
 
 Ikkita production loyihasi ham shaxsiy loyiha hisoblanadi va professional ish tajribasi sifatida ko‘rsatilmaydi.
 
@@ -38,10 +38,13 @@ php artisan key:generate
 ```bash
 php artisan migrate
 php artisan db:seed
+php artisan storage:link
 npm install
 npm run build
 php artisan serve
 ```
+
+`php artisan db:seed` faqat lokal muhit uchun; production’da loyihalar avtomatik seed qilinmaydi.
 
 Admin panel `/admin` manzilida. Foydalanuvchi yaratish:
 
@@ -66,13 +69,26 @@ Production konfiguratsiyalari [deploy/](deploy/) papkasida:
 - `deploy/php-fpm-pool.conf` — PHP-FPM pool va OPcache sozlamalari.
 - `deploy/.env.production.example` — production `.env` namunasi.
 
-Deploy chog‘ida domen, SSL yo‘li, PHP-FPM socket’i va barcha parollar o‘zgartirilishi kerak. Shundan keyin:
+Deploy chog‘ida domen, SSL yo‘li, PHP-FPM socket’i va barcha parollar o‘zgartirilishi kerak. To‘liq tartib:
 
 ```bash
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
 php artisan key:generate
+php artisan migrate --force
+php artisan app:create-admin <email>
 php artisan storage:link
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan event:cache
+sudo systemctl reload php8.3-fpm
 ```
+
+Ixtiyoriy, bir martalik (faqat boshlang‘ich loyihalarni yuklash uchun):
+
+```bash
+php artisan db:seed --class=ProjectSeeder --force
+```
+
+`php-fpm` reload qilinadi, chunki `php_admin_value[opcache.validate_timestamps] = 0` holatida yangi PHP kod jarayonlar qayta boshlanmaguncha ko‘rinmaydi.

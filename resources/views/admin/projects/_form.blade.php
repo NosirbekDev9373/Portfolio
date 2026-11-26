@@ -306,42 +306,16 @@
     @enderror
 </fieldset>
 
-<div class="grid gap-6 sm:grid-cols-2">
-    <div class="sm:col-span-2">
-        <label for="screenshot" class="{{ $labelClass }}">Screenshot</label>
-        <input id="screenshot" name="screenshot" type="file" accept="image/png,image/jpeg,image/webp" class="mt-1 block w-full text-sm text-muted file:mr-4 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-background">
-        <p class="mt-1 text-xs text-muted">PNG, JPG, JPEG or WebP, max 2 MB</p>
-        @error('screenshot')
-            <p class="{{ $errorClass }}">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="screenshot_alt_uz" class="{{ $labelClass }}">Alt text (Uzbek)</label>
-        <input id="screenshot_alt_uz" name="screenshot_alt_uz" type="text" value="{{ old('screenshot_alt_uz') }}" class="{{ $inputClass }}">
-        <p class="mt-1 text-xs text-muted">Leave empty to use the project title.</p>
-        @error('screenshot_alt_uz')
-            <p class="{{ $errorClass }}">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="screenshot_alt_en" class="{{ $labelClass }}">Alt text (English)</label>
-        <input id="screenshot_alt_en" name="screenshot_alt_en" type="text" value="{{ old('screenshot_alt_en') }}" class="{{ $inputClass }}">
-        <p class="mt-1 text-xs text-muted">Leave empty to use the project title.</p>
-        @error('screenshot_alt_en')
-            <p class="{{ $errorClass }}">{{ $message }}</p>
-        @enderror
-    </div>
-
-    <div>
-        <label for="screenshot_sort_order" class="{{ $labelClass }}">Sort order</label>
-        <input id="screenshot_sort_order" name="screenshot_sort_order" type="number" min="0" max="10000" value="{{ old('screenshot_sort_order') }}" class="{{ $inputClass }}">
-        <p class="mt-1 text-xs text-muted">Leave empty to add the screenshot last.</p>
-        @error('screenshot_sort_order')
-            <p class="{{ $errorClass }}">{{ $message }}</p>
-        @enderror
-    </div>
+<div>
+    <label for="screenshots" class="{{ $labelClass }}">Screenshots</label>
+    <input id="screenshots" name="screenshots[]" type="file" accept="image/png,image/jpeg,image/webp" multiple class="mt-1 block w-full text-sm text-muted file:mr-4 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-background">
+    <p class="mt-1 text-xs text-muted">PNG, JPG, JPEG or WebP, max 2 MB each, max 10 screenshots per project.</p>
+    @error('screenshots')
+        <p class="{{ $errorClass }}">{{ $message }}</p>
+    @enderror
+    @error('screenshots.*')
+        <p class="{{ $errorClass }}">{{ $message }}</p>
+    @enderror
 </div>
 
 @if ($project->exists)
@@ -355,7 +329,7 @@
                             @php
                                 $existingSize = @getimagesize(\Illuminate\Support\Facades\Storage::disk('public')->path($image->path));
                             @endphp
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->path) }}" @if ($existingSize) width="{{ $existingSize[0] }}" height="{{ $existingSize[1] }}" @endif alt="{{ $image->localizedAlt() }}" class="h-24 w-40 rounded-xl border border-white/10 object-cover">
+                            <img src="{{ asset('storage/'.$image->path) }}" @if ($existingSize) width="{{ $existingSize[0] }}" height="{{ $existingSize[1] }}" @endif alt="{{ $image->localizedAlt() }}" class="h-24 w-40 rounded-xl border border-white/10 object-cover">
                         @endif
 
                         <div class="grid flex-1 gap-3 sm:grid-cols-2">
