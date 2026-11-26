@@ -3,7 +3,7 @@
 @php
     $title = $project->localized('title');
     $summary = $project->localized('summary') ?? $project->localized('description') ?? __('site.meta.description');
-    $overview = $project->localized('description') ?? $project->localized('summary') ?? __('site.case_study.overview_placeholder');
+    $overview = $project->localized('description') ?? $project->localized('summary');
     $problem = $project->localizedProblem();
     $solution = $project->localizedSolution();
     $features = $project->localizedFeatures();
@@ -104,11 +104,13 @@
         </section>
 
         <div class="mt-12 space-y-8">
-            <section id="overview" data-reveal class="section-card scroll-mt-24">
-                <x-section-label number="01" :label="__('site.case_study.overview')" />
-                <h2 class="section-heading">{{ __('site.case_study.overview') }}</h2>
-                <p class="mt-4 max-w-4xl text-sm leading-7 text-muted">{!! nl2br(e($overview)) !!}</p>
-            </section>
+            @if ($overview !== null)
+                <section id="overview" data-reveal class="section-card scroll-mt-24">
+                    <x-section-label number="01" :label="__('site.case_study.overview')" />
+                    <h2 class="section-heading">{{ __('site.case_study.overview') }}</h2>
+                    <p class="mt-4 max-w-4xl text-sm leading-7 text-muted">{!! nl2br(e($overview)) !!}</p>
+                </section>
+            @endif
 
             @if ($problem !== null || $solution !== null)
                 <section id="problem-solution" data-reveal class="scroll-mt-24">
@@ -157,9 +159,9 @@
                 <h2 class="section-heading">{{ __('site.case_study.technology_stack') }}</h2>
 
                 <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach (config('portfolio.skill_groups') as $group => $labelKey)
+                    @foreach (['backend', 'frontend', 'database', 'tools'] as $group)
                         <div class="section-card">
-                            <p class="section-label">{{ __($labelKey) }}</p>
+                            <p class="section-label">{{ __('site.skills.groups.'.$group) }}</p>
                             <div class="mt-4 flex flex-wrap gap-2">
                                 @forelse ($technologiesByGroup->get($group, collect()) as $technology)
                                     <span class="chip">{{ $technology->name }}</span>
@@ -176,29 +178,7 @@
                 <x-section-label number="05" :label="__('site.case_study.screenshots')" />
                 <h2 class="section-heading">{{ __('site.case_study.screenshots') }}</h2>
 
-                <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                    @forelse ($screenshots as $image)
-                        @php
-                            $screenshotSize = @getimagesize(\Illuminate\Support\Facades\Storage::disk('public')->path($image->path));
-                        @endphp
-                        <figure class="overflow-hidden rounded-3xl border border-white/10 bg-surface">
-                            <img
-                                src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($image->path) }}"
-                                @if ($screenshotSize) width="{{ $screenshotSize[0] }}" height="{{ $screenshotSize[1] }}" @endif
-                                alt="{{ $image->localizedAlt() ?? $title }}"
-                                class="aspect-[16/10] w-full object-cover"
-                                loading="lazy"
-                            >
-                            <figcaption class="px-4 py-3 text-xs text-muted">{{ $image->localizedAlt() ?? $title }}</figcaption>
-                        </figure>
-                    @empty
-                        @for ($i = 0; $i < 2; $i++)
-                            <div class="flex aspect-[16/10] items-center justify-center rounded-3xl border border-white/10 bg-linear-to-br from-accent/20 via-surface to-background">
-                                <span class="text-xs uppercase tracking-[0.3em] text-muted">{{ __('site.case_study.screenshot_placeholder') }}</span>
-                            </div>
-                        @endfor
-                    @endforelse
-                </div>
+                <x-project-carousel :images="$screenshots" :fallback-title="$title" />
             </section>
 
             @if (! empty($contributions))

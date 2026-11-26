@@ -4,8 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Project;
 use App\Models\ProjectImage;
+use App\Models\Skill;
 use App\Models\Technology;
 use Database\Seeders\ProjectSeeder;
+use Database\Seeders\SkillSeeder;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
@@ -20,6 +23,40 @@ class PortfolioSchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('technologies'));
         $this->assertTrue(Schema::hasTable('project_technology'));
         $this->assertTrue(Schema::hasTable('project_images'));
+        $this->assertTrue(Schema::hasTable('skills'));
+    }
+
+    public function test_skills_table_supports_defaults_grouping_and_ordering(): void
+    {
+        $skill = Skill::create([
+            'name' => 'Laravel 13',
+            'group' => 'backend',
+        ]);
+
+        $this->assertTrue($skill->exists);
+        $this->assertSame('used', $skill->status);
+        $this->assertSame(0, $skill->sort_order);
+        $this->assertDatabaseHas('skills', [
+            'name' => 'Laravel 13',
+            'group' => 'backend',
+            'status' => 'used',
+            'sort_order' => 0,
+        ]);
+    }
+
+    public function test_skill_name_is_unique_within_a_group(): void
+    {
+        Skill::create([
+            'name' => 'PHP 8.3+',
+            'group' => 'backend',
+        ]);
+
+        $this->expectException(QueryException::class);
+
+        Skill::create([
+            'name' => 'PHP 8.3+',
+            'group' => 'backend',
+        ]);
     }
 
     public function test_project_relationships_and_scopes_work(): void
@@ -52,6 +89,34 @@ class PortfolioSchemaTest extends TestCase
         $this->assertSame($project->id, $image->project->id);
         $this->assertCount(1, Project::published()->get());
         $this->assertCount(1, Project::featured()->get());
+    }
+
+    public function test_project_images_are_ordered_by_sort_order(): void
+    {
+        $project = Project::create([
+            'slug' => 'ordered-images',
+            'title_uz' => 'Tartiblangan rasmlar',
+            'title_en' => 'Ordered Images',
+            'status' => 'production',
+        ]);
+
+        $project->images()->create([
+            'path' => 'projects/later.png',
+            'alt_uz' => 'Keyin',
+            'alt_en' => 'Later',
+            'sort_order' => 2,
+        ]);
+        $project->images()->create([
+            'path' => 'projects/first.png',
+            'alt_uz' => 'Birinchi',
+            'alt_en' => 'First',
+            'sort_order' => 1,
+        ]);
+
+        $this->assertSame(
+            ['projects/first.png', 'projects/later.png'],
+            $project->images->pluck('path')->all(),
+        );
     }
 
     public function test_project_seeder_creates_the_two_production_projects(): void
@@ -131,6 +196,7 @@ class PortfolioSchemaTest extends TestCase
         $this->seed();
 
         $this->assertSame(0, Project::count());
+        $this->assertSame(0, Skill::count());
     }
 
     public function test_database_seeder_seeds_projects_outside_production(): void
@@ -138,5 +204,43 @@ class PortfolioSchemaTest extends TestCase
         $this->seed();
 
         $this->assertSame(2, Project::count());
+        $this->assertSame(31, Skill::count());
+    }
+
+    public function test_skill_seeder_creates_the_initial_skill_list(): void
+    {
+        $this->seed(SkillSeeder::class);
+
+        $this->assertSame(31, Skill::count());
+        $this->assertDatabaseHas('skills', [
+            'name' => 'PHP 8.3+',
+            'group' => 'backend',
+            'status' => 'used',
+            'sort_order' => 1,
+        ]);
+        $this->assertDatabaseHas('skills', [
+            'name' => 'Feature & Unit testing',
+            'group' => 'testing',
+            'status' => 'used',
+            'sort_order' => 2,
+        ]);
+    }
+
+    public function test_skill_seeder_does_not_overwrite_existing_skills(): void
+    {
+        $skill = Skill::create([
+            'name' => 'PHP 8.3+',
+            'group' => 'backend',
+            'status' => 'learning',
+            'sort_order' => 99,
+        ]);
+
+        $this->seed(SkillSeeder::class);
+
+        $skill->refresh();
+
+        $this->assertSame(31, Skill::count());
+        $this->assertSame('learning', $skill->status);
+        $this->assertSame(99, $skill->sort_order);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ProjectController as AdminProjectController;
+use App\Http\Controllers\Admin\SkillController as AdminSkillController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\RobotsController;
@@ -26,6 +27,12 @@ Route::prefix('{locale}')
 
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminProjectController::class, 'index'])->name('projects.index');
+    Route::get('/skills', [AdminSkillController::class, 'index'])->name('skills.index');
+    Route::get('/skills/create', [AdminSkillController::class, 'create'])->name('skills.create');
+    Route::post('/skills', [AdminSkillController::class, 'store'])->name('skills.store');
+    Route::get('/skills/{skill}/edit', [AdminSkillController::class, 'edit'])->name('skills.edit');
+    Route::put('/skills/{skill}', [AdminSkillController::class, 'update'])->name('skills.update');
+    Route::delete('/skills/{skill}', [AdminSkillController::class, 'destroy'])->name('skills.destroy');
     Route::get('/create', [AdminProjectController::class, 'create'])->name('projects.create');
     Route::post('/', [AdminProjectController::class, 'store'])->name('projects.store');
     Route::get('/{project}/edit', [AdminProjectController::class, 'edit'])->name('projects.edit');

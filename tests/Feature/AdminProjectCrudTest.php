@@ -196,12 +196,12 @@ class AdminProjectCrudTest extends TestCase
         $this->assertNull($project->contributions);
     }
 
-    public function test_screenshot_upload_is_stored_with_type_and_size_limits(): void
+    public function test_screenshot_uploads_are_stored_with_type_and_size_limits(): void
     {
         $this->actingAs($this->admin)
             ->post(route('admin.projects.store'), $this->payload([
                 'slug' => 'with-screenshot',
-                'screenshot' => UploadedFile::fake()->image('screen.png', 120, 120),
+                'screenshots' => [UploadedFile::fake()->image('screen.png', 120, 120)],
             ]))
             ->assertRedirect(route('admin.projects.index'));
 
@@ -217,35 +217,102 @@ class AdminProjectCrudTest extends TestCase
         $this->actingAs($this->admin)
             ->post(route('admin.projects.store'), $this->payload([
                 'slug' => 'bad-type',
-                'screenshot' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+                'screenshots' => [UploadedFile::fake()->create('notes.txt', 10, 'text/plain')],
             ]))
-            ->assertSessionHasErrors('screenshot');
+            ->assertSessionHasErrors('screenshots.0');
 
         $this->actingAs($this->admin)
             ->post(route('admin.projects.store'), $this->payload([
                 'slug' => 'too-big',
-                'screenshot' => UploadedFile::fake()->create('huge.png', 2049, 'image/png'),
+                'screenshots' => [UploadedFile::fake()->create('huge.png', 2049, 'image/png')],
             ]))
-            ->assertSessionHasErrors('screenshot');
+            ->assertSessionHasErrors('screenshots.0');
     }
 
-    public function test_screenshot_upload_accepts_custom_alt_text_and_sort_order(): void
+    public function test_multiple_screenshot_uploads_are_appended_after_existing_images(): void
     {
+        $project = $this->createProject(['slug' => 'append-screenshots']);
+
+        $project->images()->create([
+            'path' => 'projects/existing.png',
+            'alt_uz' => 'Mavjud',
+            'alt_en' => 'Existing',
+            'sort_order' => 5,
+        ]);
+        Storage::disk('public')->put('projects/existing.png', 'fake-image');
+
         $this->actingAs($this->admin)
-            ->post(route('admin.projects.store'), $this->payload([
-                'slug' => 'custom-screenshot',
-                'screenshot' => UploadedFile::fake()->image('screen.png', 120, 120),
-                'screenshot_alt_uz' => 'Maxsus alt',
-                'screenshot_alt_en' => 'Custom alt',
-                'screenshot_sort_order' => 4,
+            ->put(route('admin.projects.update', $project), $this->payload([
+                'slug' => 'append-screenshots',
+                'title_uz' => $project->title_uz,
+                'title_en' => $project->title_en,
+                'screenshots' => [
+                    UploadedFile::fake()->image('first.png', 120, 120),
+                    UploadedFile::fake()->image('second.png', 120, 120),
+                ],
             ]))
             ->assertRedirect(route('admin.projects.index'));
 
-        $image = Project::where('slug', 'custom-screenshot')->firstOrFail()->images()->firstOrFail();
+        $images = $project->images()->orderBy('sort_order')->get();
 
-        $this->assertSame('Maxsus alt', $image->alt_uz);
-        $this->assertSame('Custom alt', $image->alt_en);
-        $this->assertSame(4, $image->sort_order);
+        $this->assertCount(3, $images);
+        $this->assertSame([5, 6, 7], $images->pluck('sort_order')->all());
+        $this->assertSame(
+            [$project->title_uz, $project->title_uz],
+            $images->slice(1)->values()->pluck('alt_uz')->all(),
+        );
+        $this->assertSame(
+            [$project->title_en, $project->title_en],
+            $images->slice(1)->values()->pluck('alt_en')->all(),
+        );
+
+        foreach ($images->slice(1)->pluck('path') as $path) {
+            Storage::disk('public')->assertExists($path);
+        }
+    }
+
+    public function test_project_cannot_have_more_than_ten_screenshots(): void
+    {
+        $project = $this->createProject(['slug' => 'limit-screenshots']);
+
+        for ($sortOrder = 1; $sortOrder <= 9; $sortOrder++) {
+            $project->images()->create([
+                'path' => 'projects/existing-'.$sortOrder.'.png',
+                'alt_uz' => 'Mavjud '.$sortOrder,
+                'alt_en' => 'Existing '.$sortOrder,
+                'sort_order' => $sortOrder,
+            ]);
+        }
+
+        $this->actingAs($this->admin)
+            ->put(route('admin.projects.update', $project), $this->payload([
+                'slug' => 'limit-screenshots',
+                'screenshots' => [
+                    UploadedFile::fake()->image('first.png', 120, 120),
+                    UploadedFile::fake()->image('second.png', 120, 120),
+                ],
+            ]))
+            ->assertSessionHasErrors('screenshots');
+
+        $this->assertSame(9, $project->images()->count());
+    }
+
+    public function test_store_rejects_more_than_ten_new_screenshots(): void
+    {
+        $files = [];
+
+        for ($index = 0; $index < 11; $index++) {
+            $files[] = UploadedFile::fake()->image('screen-'.$index.'.png', 20, 20);
+        }
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.projects.store'), $this->payload([
+                'slug' => 'too-many-new',
+                'screenshots' => $files,
+            ]))
+            ->assertSessionHasErrors('screenshots');
+
+        $this->assertDatabaseMissing('projects', ['slug' => 'too-many-new']);
     }
 
     public function test_admin_can_update_screenshot_alt_text_and_sort_order(): void
@@ -369,6 +436,46 @@ class AdminProjectCrudTest extends TestCase
         $this->assertFalse($project->is_published);
         $this->assertTrue($project->technologies->contains($this->otherTechnology));
         $this->assertFalse($project->technologies->contains($this->technology));
+    }
+
+    public function test_admin_edit_form_uses_asset_urls_for_screenshots(): void
+    {
+        $project = $this->createProject(['slug' => 'asset-form']);
+
+        $image = $project->images()->create([
+            'path' => 'projects/asset.png',
+            'alt_uz' => 'Asset UZ',
+            'alt_en' => 'Asset EN',
+            'sort_order' => 1,
+        ]);
+        Storage::disk('public')->put('projects/asset.png', 'fake-image');
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.projects.edit', $project))
+            ->assertOk()
+            ->assertSee(asset('storage/projects/asset.png'), false)
+            ->assertSee('name="screenshots[]"', false)
+            ->assertSee('multiple', false)
+            ->assertSee('name="images['.$image->id.'][alt_uz]"', false)
+            ->assertDontSee('name="screenshot"', false)
+            ->assertDontSee('name="screenshot_alt_uz"', false)
+            ->assertDontSee('name="screenshot_sort_order"', false);
+    }
+
+    public function test_project_forms_have_submit_button(): void
+    {
+        $project = $this->createProject(['slug' => 'form-button']);
+        $saveButton = '<button type="submit" class="btn btn-primary">Save project</button>';
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.projects.create'))
+            ->assertOk()
+            ->assertSee($saveButton, false);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.projects.edit', $project))
+            ->assertOk()
+            ->assertSee($saveButton, false);
     }
 
     public function test_admin_can_delete_selected_screenshot(): void

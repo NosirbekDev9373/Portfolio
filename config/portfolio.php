@@ -27,11 +27,4 @@ return [
         ['key' => 'contact', 'route' => 'home', 'anchor' => '#contact'],
     ],
 
-    'skill_groups' => [
-        'backend' => 'site.skills.groups.backend',
-        'database' => 'site.skills.groups.database',
-        'frontend' => 'site.skills.groups.frontend',
-        'tools' => 'site.skills.groups.tools',
-    ],
-
 ];

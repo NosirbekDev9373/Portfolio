@@ -4,7 +4,7 @@ return [
     'brand' => 'Nurullayev Nosirbek',
     'meta' => [
         'title' => 'Nurullayev Nosirbek — PHP / Laravel Developer',
-        'description' => 'Personal portfolio of a PHP / Laravel backend developer: production projects, technical skills, and contact information.',
+        'description' => 'Personal portfolio of a PHP / Laravel full-stack developer: production projects, technical skills, and contact information.',
     ],
     'nav' => [
         'primary' => 'Primary navigation',
@@ -29,9 +29,9 @@ return [
         'contact' => 'Contact',
     ],
     'hero' => [
-        'eyebrow' => 'PHP / Laravel Backend Developer',
+        'eyebrow' => 'PHP / Laravel Full-Stack Developer',
         'heading' => 'I build digital products with PHP and Laravel.',
-        'description' => '[Short professional description will be added here.]',
+        'description' => 'I build secure, scalable web applications with PHP and Laravel, from the first idea to a production server.',
         'production_label' => 'Production projects',
         'core_stack' => 'Core stack',
         'view_projects' => 'View projects',
@@ -41,9 +41,17 @@ return [
     ],
     'about' => [
         'heading' => 'About Me',
-        'placeholder' => '[About me text will be added here.]',
-        'focus' => 'Focus',
-        'focus_placeholder' => '[Focus areas will be added here.]',
+        'text' => 'I focus on full-stack web development. My main interest is building modern, secure and extensible web applications. My goal is not only to write code, but to become a developer who can carry a web project through the whole process, from the first idea to the production environment.',
+        'focus' => [
+            'Backend architecture and server-side development',
+            'Building web applications and REST APIs with Laravel',
+            'Frontend and backend integration',
+            'Database design and optimization',
+            'Authentication, authorization and application security',
+            'Setting up development environments with Docker',
+            'Automating CI/CD workflows with GitHub Actions',
+            'Deploying and maintaining projects in production',
+        ],
     ],
     'projects' => [
         'heading' => 'Featured Projects',
@@ -65,12 +73,14 @@ return [
     ],
     'skills' => [
         'heading' => 'Technical Skills',
-        'note' => 'Only technologies used in real projects.',
+        'note' => 'Technologies that I have used in practice and continue to use and learn.',
+        'learning' => 'Learning',
         'groups' => [
             'backend' => 'Backend',
-            'database' => 'Database',
             'frontend' => 'Frontend basics',
+            'database' => 'Database',
             'tools' => 'Tools & DevOps',
+            'testing' => 'Testing',
         ],
     ],
     'journey' => [
@@ -78,22 +88,22 @@ return [
         'note' => 'Personal projects are not presented as professional experience.',
         'items' => [
             [
-                'title' => '[Journey item 1]',
-                'description' => '[Description will be added.]',
+                'title' => '2024 — The beginning',
+                'description' => 'I started my programming journey with PHP and the fundamentals of web development.',
             ],
             [
-                'title' => '[Journey item 2]',
-                'description' => '[Description will be added.]',
+                'title' => 'Learning by building',
+                'description' => 'I expanded my knowledge of backend and frontend technologies, software architecture, databases and modern development practices by building personal projects, applying new technologies and deploying applications to production.',
             ],
             [
-                'title' => '[Journey item 3]',
-                'description' => '[Description will be added.]',
+                'title' => 'Today',
+                'description' => 'I focus on full-stack development and keep improving my skills in PHP, Laravel, JavaScript, databases and CI/CD automation.',
             ],
         ],
     ],
     'github' => [
         'heading' => 'Code & repositories',
-        'placeholder' => '[GitHub activity text will be added here.]',
+        'text' => 'My open repositories on GitHub: source code, README files and commit history.',
         'profile' => 'GitHub profile',
         'repositories' => 'Repositories',
         'view_repository' => 'View repository',
@@ -101,7 +111,7 @@ return [
     ],
     'contact' => [
         'heading' => 'Get in touch',
-        'placeholder' => '[Contact text will be added here.]',
+        'text' => 'Have a question, an idea or a project to discuss? Get in touch by email, LinkedIn or GitHub.',
         'email' => 'Email',
         'linkedin' => 'LinkedIn',
         'github' => 'GitHub',
@@ -110,7 +120,7 @@ return [
         'label' => 'Language',
     ],
     'footer' => [
-        'tagline' => 'PHP / Laravel Backend Developer',
+        'tagline' => 'PHP / Laravel Full-Stack Developer',
         'rights' => 'All rights reserved.',
     ],
     'skip_to_content' => 'Skip to content',
@@ -119,7 +129,6 @@ return [
         'breadcrumb' => 'Breadcrumb',
         'quick_links' => 'Quick links',
         'overview' => 'Overview',
-        'overview_placeholder' => '[Overview text will be added.]',
         'problem_solution' => 'Problem & Solution',
         'problem' => 'Problem',
         'solution' => 'Solution',
@@ -127,6 +136,10 @@ return [
         'technology_stack' => 'Technology Stack',
         'screenshots' => 'Screenshots',
         'screenshot_placeholder' => 'Screenshot will be added',
+        'carousel_previous' => 'Previous screenshot',
+        'carousel_next' => 'Next screenshot',
+        'carousel_dots' => 'Screenshot dots',
+        'carousel_go_to' => 'Go to screenshot',
         'contribution' => 'My Contribution',
         'live_demo_repository' => 'Live Demo / Repository',
         'repository' => 'Repository',
